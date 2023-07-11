@@ -1,11 +1,11 @@
-import { View, Text } from 'react-native';
+import { View, Text } from "react-native";
+import HomePage from "./src/pages/HomePage";
 
-const ViewBoxesWithColorAndText = () => {
+export default function App() {
     return (
-        <View>
-            <Text>This is demo Project</Text>
+        <View className="flex-1 bg-slate-500">
+            <HomePage/>
         </View>
     );
-};
+}
 
-export default ViewBoxesWithColorAndText;
