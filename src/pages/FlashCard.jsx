@@ -3,12 +3,18 @@ import ok from "../assets/ok.png";
 import no from "../assets/no.png";
 import review from "../assets/review.png";
 
-const FlashCard = () => {
+const FlashCard = (props) => {
     return (
-        <View className="flex-1 items-center justify-center px-5 space-y-6">
+        <View className="flex-1 bg-black items-center justify-center px-5 space-y-6">
             <View className="space-y-4">
-                <Text className="bg-sky-400 w-28 px-2 py-1 text-lg text-center font-semibold rounded-2xl">Home</Text>
-                <Text className="bg-slate-300 text-red-500 w-28  py-1 text-lg text-center font-semibold rounded-2xl">Next Card</Text>
+                {/* <Text className="bg-sky-400 w-28 px-2 py-1 text-lg text-center font-semibold rounded-2xl">Home</Text> */}
+                <View>
+                    <Button title='Home' onPress={() => props.navigation.navigate("Home")} />
+                </View>
+                {/* <Text className="bg-slate-300 text-red-500 w-28  py-1 text-lg text-center font-semibold rounded-2xl">Next Card</Text> */}
+                <View>
+                    <Button title='Next Card' onPress={() => props.navigation.navigate("")} />
+                </View>
             </View>
             <View className="bg-slate-300 w-full p-5 space-y-6 h-96 rounded-xl">
                 <View>
