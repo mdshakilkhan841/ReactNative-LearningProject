@@ -12,7 +12,7 @@ const App = () => {
         <NavigationContainer>
             <Stack.Navigator>
                 <Stack.Screen name="Home" component={HomePage} />
-                <Stack.Screen name="Flash Card" component={FlashCard} />
+                <Stack.Screen name="FlashCard" component={FlashCard} />
             </Stack.Navigator>
         </NavigationContainer>
     );
