@@ -20,16 +20,17 @@ const HomePage = () => {
             getData();
         },[])
     );
+
     const getData = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('my-res');
-            console.log(jsonValue);
+            console.log(`HomePage Initial get Data:  ${jsonValue}`)
             if (jsonValue !== null) {
                 const data = JSON.parse(jsonValue);
                 setResData(data);
             }
             else {
-                setResData({ know: 0, dontKnow: 0, research: 0, quesIndex: 0 }); // Set default values to 0
+                setResData({ know: 0, dontKnow: 0, research: 0, resData: [] }); // Set default values to 0
             }
 
         } catch (e) {
@@ -43,7 +44,7 @@ const HomePage = () => {
     const removeData = async () => {
         try {
             const savedUser = await AsyncStorage.clear();
-            setResData({ know: 0, dontKnow: 0, research: 0, quesIndex: 0 });
+            setResData({ know: 0, dontKnow: 0, research: 0, resData:[] });
         } catch (error) {
             console.log(error);
         }
@@ -54,7 +55,7 @@ const HomePage = () => {
         <SafeAreaView className="flex-1 relative bg-black items-center justify-center space-y-10">
             <View className=" px-20 py-4 bg-slate-600 space-y-2 rounded-xl">
                 <Text className="text-white text-lg"><Text className="text-xl font-bold text-green-500">{resData.know}  </Text>| I Know</Text>
-                <Text className="text-white text-lg"><Text className="text-xl font-bold text-red-500">{resData.dontKnow}  </Text>| I Don't Kno</Text>
+                <Text className="text-white text-lg"><Text className="text-xl font-bold text-red-500">{resData.dontKnow}  </Text>| I Don't Know</Text>
                 <Text className="text-white text-lg"><Text className="text-xl font-bold text-orange-500">{resData.research}  </Text>| Need Research</Text>
             </View>
             <View>

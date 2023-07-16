@@ -1,20 +1,21 @@
-import { SafeAreaView, View, Text, Button, Image, TouchableOpacity } from "react-native";
+import { SafeAreaView, View, Text, Button, Image, TouchableOpacity, Alert } from "react-native";
 import ok from "../assets/ok.png";
 import no from "../assets/no.png";
 import review from "../assets/review.png";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useLayoutEffect, useState } from 'react';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import questions from "../question.json";
 
 const FlashCard = () => {
 
     const [responseCounts, setResponseCounts] = useState({
         know: 0,
         dontKnow: 0,
-        research: 0
+        research: 0,
+        resData: []
     });
     const [quesIndex, setQuesIndex] = useState(0);
-    const [answeredQuestions, setAnsweredQuestions] = useState([]);
 
 
 
@@ -25,12 +26,12 @@ const FlashCard = () => {
     const getData = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('my-res');
-            console.log(jsonValue)
+            console.log(`FlashPage Initial get Data:  ${jsonValue}`)
             if (jsonValue !== null) {
                 const data = JSON.parse(jsonValue);
                 setResponseCounts(data);
             } else {
-                setResponseCounts({ know: 0, dontKnow: 0, research: 0 }); // Set default values to 0
+                setResponseCounts({ know: 0, dontKnow: 0, research: 0, resData: [] }); // Set default values to 0
             }
         } catch (e) {
             console.warn(e);
@@ -40,7 +41,7 @@ const FlashCard = () => {
 
     // store data in local storage
     const storeData = async (data) => {
-        console.log(data);
+        console.log(`Store${data}`);
         try {
             await AsyncStorage.setItem('my-res', JSON.stringify(data));
         } catch (e) {
@@ -52,20 +53,65 @@ const FlashCard = () => {
     const handleNextCard = () => {
         const nextIndex = quesIndex + 1;
         console.log(nextIndex);
-        if(nextIndex === questions.length){
-            alert("This is last Question !")
-        }
         setQuesIndex(nextIndex >= questions.length ? 0 : nextIndex);
+        if (nextIndex === questions.length) {
+            Alert.alert("Question Finished !", "See your Score...", [
+                {
+                    text: "OK",
+                    onPress: () => navigation.navigate("Home"),
+                },
+            ]);
+        }
     };
-    
-    //Response Button function
-    const handleResponse = (type) => {
+
+    // Response Button function
+    const handleResponse = (type, quesIndex) => {
         handleNextCard();
         const totalResponse = responseCounts.know + responseCounts.dontKnow + responseCounts.research;
-        const updatedCounts = { ...responseCounts, [type]: totalResponse === questions.length ? responseCounts[type] : responseCounts[type] + 1 };
-        setResponseCounts(updatedCounts);
-        storeData(updatedCounts);
+
+        // Check if the response for the current question already exists in resData
+        const existingResponseIndex = responseCounts.resData.findIndex(data => data.Index === quesIndex);
+
+        if (existingResponseIndex !== -1) {
+            const existingResponse = responseCounts.resData[existingResponseIndex].response;
+            if (existingResponse === type) {
+                // Same response type, no change needed
+                return;
+            }
+
+            // Update the existing response with the new type
+            const updatedResData = responseCounts.resData.map((data) => {
+                if (data.Index === quesIndex) {
+                    return { ...data, response: type };
+                }
+                return data;
+            });
+
+            const updatedCounts = {
+                ...responseCounts,
+                [type]: responseCounts[type] + 1,
+                [existingResponse]: responseCounts[existingResponse] - 1,
+                resData: updatedResData,
+            };
+
+            const updatedData = { ...updatedCounts };
+            setResponseCounts(updatedData);
+            storeData(updatedData);
+        } else {
+            // Add a new response to resData
+            const updatedCounts = {
+                ...responseCounts,
+                [type]: responseCounts[type] + 1,
+                resData: [...responseCounts.resData, { Index: quesIndex, response: type }],
+            };
+
+            const updatedData = { ...updatedCounts };
+            setResponseCounts(updatedData);
+            storeData(updatedData);
+        }
     };
+
+
 
     const questions = [{
         id: 1,
@@ -127,15 +173,15 @@ const FlashCard = () => {
 
             {/* Response B */}
             <View className="w-full flex flex-row flex-wrap justify-between">
-                <TouchableOpacity onPress={() => handleResponse("know")} className="px-6 py-2 bg-slate-300 flex items-center justify-center space-y-1 rounded-2xl">
+                <TouchableOpacity onPress={() => handleResponse("know", quesIndex)} className={`px-6 py-2 flex items-center justify-center space-y-1 rounded-2xl ${responseCounts?.resData?.find(data => data.Index === quesIndex && data.response === "know") ? "bg-blue-500" : "bg-slate-300"}`} >
                     <Image className="w-8 h-8" source={ok}></Image>
                     <Text className="font-semibold">I Know</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleResponse("dontKnow")} className="px-4 py-2 bg-slate-300 flex items-center justify-center space-y-1 rounded-2xl">
+                <TouchableOpacity onPress={() => handleResponse("dontKnow", quesIndex)} className={`px-6 py-2 flex items-center justify-center space-y-1 rounded-2xl ${responseCounts?.resData?.find(data => data.Index === quesIndex && data.response === "dontKnow") ? "bg-blue-500" : "bg-slate-300"}`} >
                     <Image className="w-8 h-8" source={no}></Image>
                     <Text className="font-semibold">Don't Know</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleResponse("research")} className="px-4 py-2 bg-slate-300 flex items-center justify-center space-y-1 rounded-2xl">
+                <TouchableOpacity onPress={() => handleResponse("research", quesIndex)} className={`px-6 py-2 flex items-center justify-center space-y-1 rounded-2xl ${responseCounts?.resData?.find(data => data.Index === quesIndex && data.response === "research") ? "bg-blue-500" : "bg-slate-300"}`} >
                     <Image className="w-14 h-8" source={review}></Image>
                     <Text className="font-semibold">Research</Text>
                 </TouchableOpacity>
